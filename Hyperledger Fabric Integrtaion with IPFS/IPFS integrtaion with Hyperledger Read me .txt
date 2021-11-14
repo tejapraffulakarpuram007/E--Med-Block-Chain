@@ -1,0 +1,28 @@
+Explanation 
+
+IPFS-Hyperledger integration
+This is a Python script which adds a given Research Object to IPFS and stores the hash into Hyperledger based blockchain using explorer -rest-server and ipfshttpclient (or py-ipfs-api : https://github.com/ipfs/py-ipfs-api).
+Download
+You need to install IPFS, Follow instruction here to do so: https://docs.ipfs.io/guides/guides/install/
+
+Clone this git repo on your local computer and enter the working directory
+
+$ cd IPFS-Hyperledger-Integration/
+
+Installation
+•	Create a Python Virtualenvironment
+$ virtualenv venv
+$ source venv/bin/activate
+
+Install required dependencies
+
+$ pip install -r requirements.txt
+Usage
+
+Run IPFS daemon :
+
+•	ipfs daemon
+
+Start explorer -rest-server (Write no if asked for api protection):
+•	Explorer rest-server
+Lets say you have a fileTejamedicalencrypt.txt in the same directory as the add-to-ipfs.py and would like to add this file to IPFS and store the resulting hash into the block chain which is currently using the Journal of Research Objects BNA file (jro@0.0.1.bna).
