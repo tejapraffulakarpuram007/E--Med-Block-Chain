@@ -1,0 +1,173 @@
+Seting Up IPFS Private Network 
+
+By default, IPFS and IPFS-Cluster use the following ports:
+
+IPFS
+4001 – Communication with other nodes
+5001 – API server
+8080 – Gateway server > change it to 3000
+IPFS-CLUSTER
+9094 – HTTP API endpoint
+9095 – IPFS proxy endpoint
+9096 – Cluster swarm, used for communication between cluster nodes
+
+To run this experiment I have created two virtual machines with installed Linux Ubuntu Distributive version 18.04 LTS and command line as the main tool for installing necessary packages and settings. 
+Let’s suppose that we have three VMs with the following IP addresses:
+to check use
+
+$ ifconfig
+
+Node0: 192.168.56.101 ---- change accordingly 
+Node1: 192.168.195.3 ---- Change accordingly 
+
+Let’s start with the zero node (Node0) which will be our bootstrap node.
+
+Step -1 Install IPFS
+We will install the latest version of the go-ipfs. At the moment of writing this article, it was v0.10.0 for Linux. You can check for the latest version here https://dist.ipfs.io/#go-ipfs
+
+Download IPFS, unzip tar file, move unzipped folder under bin and initialise IPFS node:
+$ wget https://dist.ipfs.io/go-ipfs/v0.10.0/go-ipfs_v0.10.0_linux-amd64.tar.gz
+$ tar xvfz go-ipfs_v0.4.18_linux-amd64.tar.gz
+
+$ sudo mv go ipfs/ipfs /usr/local/bin/ipfs
+
+$ ipfs init --profile server ** ---- Use only once do not sudo** 
+
+$ ipfs version
+
+----Install IPFS on all VMS ---------------------------------
+
+Step 2 Creating a Private network
+Once you have Go and IPFS installed on all of your nodes, run the following command to install the swarm key generation utility. Swarm key allows us to create a private network and tell network peers to communicate only with those peers who share this secret key
+
+$ echo -e “/key/swarm/psk/1.0.0/\n/base16/\n `tr -dc ‘a-f0–9’ < /dev/urandom | head -c64`” > ~/.ipfs/swarm.key
+
+Copy the file generated swarm.key to the IPFS directory of each node participating in the private network. First of all, you need to remove the default entries of bootstrap nodes from all the nodes you have created.
+
+Copy the generated swarm file to the .ipfs directory of all client nodes.
+
+From Node0 home directory
+
+$ cd .ipfs/
+$ cat swarm.key
+/key/swarm/psk/1.0.0/
+/base16/
+25f64b1cf31f649817d495e446d4cbcc99000b8cc032a89b681e5f86f995fa28
+
+On node1, create swarm.key in /home/ipfs/.ipfs
+
+$ nano swarm.key
+
+Add to file the 3 lines from node0 swarm.key:
+---------------------------------------------------------------
+/key/swarm/psk/1.0.0/
+/base16/
+25f64b1cf31f649817d495e446d4cbcc99000b8cc032a89b681e5f86f995fa28
+-----------------------------------------------------------------------
+
+Step 3: Bootstrapping IPFS nodes
+
+$ ipfs bootstrap 
+
+check all the nodes
+
+$ ipfs bootstrap rm –all
+
+$ ipfs config show | grep "Bootstrap"
+
+$ ipfs id ---- to get the hash key 
+
+Add the hash address of your bootstrap to each of the nodes including the bootstrap.
+
+ipfs bootstrap add /ip4/192.168.56.101/tcp/4001/ipfs/QmQVvZEmvjhYgsyEC7NvMn8EWf131EcgTXFFJQYGSz4Y83
+
+The IP part (192.168.56.101) will be changed to your Node0 machine IP. The last part is the peer ID which is generated when you initialise your peer ipfs init). You can see it above where it shows “peer identity
+
+$ ipfs id ---- to get the hash key 
+
+	Example  : QmQVvZEmvjhYgsyEC7NvMn8EWf131EcgTXFFJQYGSz4Y83
+
+We also need to set the environment variable “LIBP2P_FORCE_PNET” to force our network to Private mode:
+
+$ export LIBP2P_FORCE_PNET=1
+
+Step 4 :  Configuring IP for communication 
+
+Inside the .ipfs folder, there is a “config” file. It contains a lot of settings including the network details on which our IPFS nodes will work on. Open this config file and find “Addresses”. It will look like this:
+
+--------------------------------------------
+"Addresses": {
+
+"API": "/ip4/192.168.56.101/tcp/5001",
+
+"Announce": [],
+
+"Gateway": "/ip4/192.168.56.101/tcp/8080",
+
+"NoAnnounce": [],
+
+"Swarm": [
+
+"/ip4/0.0.0.0/tcp/4001",
+
+"/ip6/::/tcp/4001"
+
+]
+
+},
+
+
+-----------------------------------------
+The IP mentioned in the API is the one on which IPFS will bind on for communication. By default, it’s localhost (127.0.0.1), so to enable our nodes to “see” each other we need to set this parameter accordingly to each node’s IP. Gateway parameter is for access from the browser.
+
+Step 5 : Start the nodes and test
+
+We are done with all the configurations, and now it is time to start all the nodes to see if everything went well and if they are closed to the private network. Run IPFS daemon on all of your nodes.
+
+$ Ipfs daemon 
+
+You should see the contents of the added file from the first node. To check and be sure that we have a private network we can try to access our file by its CID from the public IPFS gateway. You can choose one of the public gateways from this list: https://ipfs.github.io/public-gateway-checker.
+
+If you did everything right, then the file won’t be accessible. Also, you can run the ipfs swarm peers command, and it will display a list of the peers in the network it’s connected to. In our example, each peer sees two others.
+
+Step 6: Run IPFS daemon as a service in the background
+
+For  IPFS demon to be continually running, even after we have exited from our console session, we will create systemd service. Before we do so, stop/kill your ipfs daemon. Create a file for a new service.
+
+$ sudo nano /etc/systemd/system/ipfs.service
+
+And add to it the following settings:
+---------------------------------------------------------------------------------------
+[Unit]
+
+ Description=IPFS Daemon
+
+ After=syslog.target network.target remote-fs.target nss-lookup.target
+
+ [Service]
+
+ Type=simple
+
+ ExecStart=/usr/local/bin/ipfs daemon --enable-namesys-pubsub
+
+ User=root
+
+ [Install]
+
+ WantedBy=multi-user.target
+-----------------------------------------------------------------------------------------------
+Save and close the file.
+Apply the new service.
+
+$ sudo systemctl daemon-reload
+
+$ sudo systemctl enable ipfs
+
+$ sudo systemctl start ipfs
+
+$ sudo systemctl status ipfs
+
+Reboot your system and check that IPFS daemon is active and running, and then you can again try to add the file from one node and access it from another.
+
+We have completed part of creating a private IPFS network and running its demons as a service. At this phase, you should have three IPFS nodes organised in one private network. Now let’s create our IPFS-CLUSTER for data replication.
+--------------------------------------------------------------------------------------------------
