@@ -4,7 +4,7 @@ import requests
 input("Welcome, Please ensure IPFS daemon is running. If not, Use command 'ipfs daemon'")
 
 try:
-	client = ipfshttpclient.connect('/ip4/127.0.0.1/tcp/5001/http')
+	client = ipfshttpclient.connect('/ip4/192.168.56.101/tcp/5001/http')
 	filename = input("Enter the filename stored in current directory (with extension)")
 	res = client.add(filename)
 	print("The hash of file is : ",res['Hash'])
