@@ -62,6 +62,7 @@ encrypted = public_key.encrypt(
 f = open('Teja Medical enc.txt', 'wb')
 f.write(encrypted)
 f.close()
+
 # Decrypting
 message = f = open('Teja Medical enc.txt', 'rb')
 message = f.read()
