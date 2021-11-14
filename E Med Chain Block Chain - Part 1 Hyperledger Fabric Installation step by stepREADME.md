@@ -27,7 +27,7 @@ There will be errors if you try to install Hyperledger Explorer as a root, there
 $ sudo adduser tej 
 $ sudo usermod -aG sudo tej
 
-Switch user to ''tej''
+Switch user to "tej"
 $ su - tej
 
 Step 3 — Set up the prerequisites
