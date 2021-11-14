@@ -1,4 +1,4 @@
-# Generating a key
+# Generating a keys
 
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives.asymmetric import rsa
@@ -26,7 +26,7 @@ pem = public_key.public_bytes(
 with open('public_key.pem', 'wb') as f:
     f.write(pem)
 
-# Reading the keys back in (for testing )
+# Reading the keys back in (for testing the program )
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import serialization
 with open("private_key.pem", "rb") as key_file:
@@ -41,7 +41,7 @@ with open("public_key.pem", "rb") as key_file:
             backend=default_backend()
         )
 
-# Encrypting and decrypting
+# Encrypting 
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric import padding
 
@@ -62,7 +62,7 @@ encrypted = public_key.encrypt(
 f = open('Teja Medical enc.txt', 'wb')
 f.write(encrypted)
 f.close()
-
+# Decrypting
 message = f = open('Teja Medical enc.txt', 'rb')
 message = f.read()
 f.close()
