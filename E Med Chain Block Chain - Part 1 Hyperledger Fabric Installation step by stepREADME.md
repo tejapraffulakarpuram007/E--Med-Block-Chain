@@ -304,3 +304,8 @@ New > Collections
 # And now you can simply use these APIs with any frontend framework of your choice.
 
 -----------------Follow the total procedure on all VM's -----------------
+References for above environment and configuration
+ 
+ https://medium.com/coinmonks/integrating-hyperledger-explorer-with-hyperledger-fabric-network-v2-2-9a70e4c5311
+ https://github.com/hyperledger/blockchain-explorer.git
+ 
